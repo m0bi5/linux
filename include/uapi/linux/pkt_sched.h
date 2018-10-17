@@ -916,6 +916,20 @@ struct tc_pie_xstats {
 	__u32 ecn_mark;         /* packets marked with ecn*/
 };
 
+/* FQ PIE */
+enum {
+	TCA_FQ_PIE_UNSPEC,
+	TCA_FQ_PIE_TARGET,
+	TCA_FQ_PIE_LIMIT,
+	TCA_FQ_PIE_TUPDATE,
+	TCA_FQ_PIE_ALPHA,
+	TCA_FQ_PIE_BETA,
+	TCA_FQ_PIE_ECN,
+	TCA_FQ_PIE_BYTEMODE,
+	__TCA_FQ_PIE_MAX
+};
+#define TCA_FQ_PIE_MAX   (__TCA_FQ_PIE_MAX - 1)
+
 /* CBS */
 struct tc_cbs_qopt {
 	__u8 offload;
