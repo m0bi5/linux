@@ -291,17 +291,19 @@ static const struct nla_policy fq_pie_policy[TCA_FQ_PIE_MAX + 1] = {
 	[TCA_FQ_PIE_ALPHA] = {.type = NLA_U32},
 	[TCA_FQ_PIE_BETA] = {.type = NLA_U32},
 	[TCA_FQ_PIE_ECN] = {.type = NLA_U32},
+	[TCA_FQ_PIE_QUANTUM] = {.type = NLA_U32},
 	[TCA_FQ_PIE_BYTEMODE] = {.type = NLA_U32},
 };
 
 static int fq_pie_change(struct Qdisc *sch, struct nlattr *opt,
 		      struct netlink_ext_ack *extack)
 {
-	struct pie_sched_data *q = qdisc_priv(sch);
+	struct fq_pie_sched_data *q = qdisc_priv(sch);
 	struct nlattr *tb[TCA_FQ_PIE_MAX + 1];
 	int err;
 	unsigned int dropped = 0;
 	int qlen;
+	int i;
 
 	if (!opt)
 		return -EINVAL;
@@ -340,6 +342,19 @@ static int fq_pie_change(struct Qdisc *sch, struct nlattr *opt,
 
 	if (tb[TCA_FQ_PIE_ECN])
 		q->params.ecn = nla_get_u32(tb[TCA_PIE_ECN]);
+
+	if (tb[TCA_FQ_PIE_QUANTUM])
+	{
+		q->quantum = nla_get_u32(tb[TCA_FQ_PIE_QUANTUM]);
+		for(i = 0; i < q->flows_cnt; i++)
+		{
+			if(q->flows[i].deficit > q->quantum)
+			{
+				q->flows[i].deficit = q->quantum;
+			}
+		}
+
+	}
 
 	if (tb[TCA_FQ_PIE_BYTEMODE])
 		q->params.bytemode = nla_get_u32(tb[TCA_PIE_BYTEMODE]);
