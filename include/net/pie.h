@@ -82,12 +82,8 @@ static void pie_vars_init(struct pie_vars *vars)
 	vars->burst_time = PSCHED_NS2TICKS(100 * NSEC_PER_MSEC);
 }
 
-static void pie_process_dequeue(struct Qdisc *sch, struct pie_vars *vars, struct sk_buff *skb)
+static void pie_process_dequeue(int qlen, struct pie_vars *vars, struct sk_buff *skb)
 {
-
-	struct pie_sched_data *q = qdisc_priv(sch);
-	int qlen = sch->qstats.backlog;	/* current queue size in bytes */
-
 	/* If current queue is about 10 packets or more and dq_count is unset
 	 * we have enough packets to calculate the drain rate. Save
 	 * current time as dq_tstamp and start measurement cycle.
@@ -148,10 +144,8 @@ static void pie_process_dequeue(struct Qdisc *sch, struct pie_vars *vars, struct
 	}
 }
 
-static void calculate_probability(struct Qdisc *sch, struct pie_vars *vars)
+static void calculate_probability(u32 qlen, struct pie_params *params, struct pie_vars *vars)
 {
-	struct pie_sched_data *q = qdisc_priv(sch);
-	u32 qlen = sch->qstats.backlog;	/* queue size in bytes */
 	psched_time_t qdelay = 0;	/* in pschedtime */
 	psched_time_t qdelay_old = vars->qdelay;	/* in pschedtime */
 	s32 delta = 0;		/* determines the change in probability */
@@ -185,23 +179,23 @@ static void calculate_probability(struct Qdisc *sch, struct pie_vars *vars)
 	 */
 	if (vars->prob < MAX_PROB / 100) {
 		alpha =
-		    (q->params.alpha * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 7;
+		    (params->alpha * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 7;
 		beta =
-		    (q->params.beta * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 7;
+		    (params->beta * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 7;
 	} else if (vars->prob < MAX_PROB / 10) {
 		alpha =
-		    (q->params.alpha * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 5;
+		    (params->alpha * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 5;
 		beta =
-		    (q->params.beta * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 5;
+		    (params->beta * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 5;
 	} else {
 		alpha =
-		    (q->params.alpha * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 4;
+		    (params->alpha * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 4;
 		beta =
-		    (q->params.beta * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 4;
+		    (params->beta * (MAX_PROB / PSCHED_TICKS_PER_SEC)) >> 4;
 	}
 
 	/* alpha and beta should be between 0 and 32, in multiples of 1/16 */
-	delta += alpha * ((qdelay - q->params.target));
+	delta += alpha * ((qdelay - params->target));
 	delta += beta * ((qdelay - qdelay_old));
 
 	oldprob = vars->prob;
@@ -254,8 +248,8 @@ static void calculate_probability(struct Qdisc *sch, struct pie_vars *vars)
 	 * 3. We have atleast one estimate for the avg_dq_rate ie.,
 	 *    is a non-zero value
 	 */
-	if ((vars->qdelay < q->params.target / 2) &&
-	    (vars->qdelay_old < q->params.target / 2) &&
+	if ((vars->qdelay < params->target / 2) &&
+	    (vars->qdelay_old < params->target / 2) &&
 	    (vars->prob == 0) &&
 	    (vars->avg_dq_rate > 0))
 		pie_vars_init(vars);
