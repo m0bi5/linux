@@ -33,7 +33,6 @@
 #include <uapi/linux/pkt_sched.h>
 #include <net/inet_ecn.h>
 #include <net/netlink.h>
-
 #include <net/pie.h>
 
 struct fq_pie_stats {
@@ -41,7 +40,7 @@ struct fq_pie_stats {
 	u32 dropped;		/* packets dropped due to fq_pie action */
 	u32 overlimit;		/* dropped due to lack of space in queue */
 	u32 ecn_mark;		/* packets marked with ECN */
-	u32 new_flow_count; /* number of time packets
+	u32 new_flow_count;     /* number of time packets
 				 * created a 'new flow'
 				 */
 	u32 new_flows_len;	/* count of flows in new list */
@@ -66,8 +65,7 @@ struct fq_pie_sched_data {
 	struct fq_pie_stats stats;
 	struct Qdisc *sch;
 	struct timer_list adapt_timer;
-
-	struct list_head old_flows;
+        struct list_head old_flows;
 	struct list_head new_flows;
 };
 
@@ -291,7 +289,7 @@ static void fq_pie_timer(struct timer_list *t)
 
 	spin_lock(root_lock);
 
-    for(i = 0; i < q->flows_cnt; i++){
+        for(i = 0; i < q->flows_cnt; i++){
 		calculate_probability(q->flows[i].backlog, &q->params, &q->flows[i].vars);
 	}
 	
@@ -446,8 +444,8 @@ static int fq_pie_init(struct Qdisc *sch, struct nlattr *opt,
 	
 	return 0;
 
-init_failure:
-	q->flows_cnt = 0;
+	init_failure:
+		q->flows_cnt = 0;
 	return err;
 }
 
@@ -477,7 +475,7 @@ static int fq_pie_dump(struct Qdisc *sch, struct sk_buff *skb)
 	return nla_nest_end(skb, opts);
 
         nla_put_failure:
-	nla_nest_cancel(skb, opts);
+		nla_nest_cancel(skb, opts);
 	return -1;
 
 }
