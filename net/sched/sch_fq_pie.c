@@ -406,10 +406,8 @@ static int fq_pie_init(struct Qdisc *sch, struct nlattr *opt,
 	struct fq_pie_sched_data *q = qdisc_priv(sch);
 
 	pie_params_init(&q->params);
-	//pie_vars_init(&q->vars);
-	sch->limit = q->params.limit;
-
 	sch->limit = 10*1024;
+	q->params.limit = sch->limit;
 	q->flows_cnt = 1024;
 	q->quantum = psched_mtu(qdisc_dev(sch));
 	q->sch = sch;
@@ -517,7 +515,6 @@ static void fq_pie_reset(struct Qdisc *sch)
 
 	for(i = 0; i < q->flows_cnt; i++) {
 		struct fq_pie_flow *flow = q->flows + i;
-
 		flow_reset(flow);
 		INIT_LIST_HEAD(&flow->flowchain);
 		pie_vars_init(&flow->vars);
