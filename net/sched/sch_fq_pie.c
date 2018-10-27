@@ -41,19 +41,19 @@ struct fq_pie_stats {
 	u32 dropped;		/* packets dropped due to fq_pie action */
 	u32 overlimit;		/* dropped due to lack of space in queue */
 	u32 ecn_mark;		/* packets marked with ECN */
-	u32	new_flow_count; /* number of time packets
+	u32 new_flow_count; /* number of time packets
 				 * created a 'new flow'
 				 */
-	u32	new_flows_len;	/* count of flows in new list */
-	u32	old_flows_len;	/* count of flows in old list */
+	u32 new_flows_len;	/* count of flows in new list */
+	u32 old_flows_len;	/* count of flows in old list */
 };
 
 struct fq_pie_flow {
-	struct sk_buff	  *head;
-	struct sk_buff	  *tail;
-	struct list_head  flowchain;
-	int		  deficit;
-	u32       backlog;
+	struct sk_buff *head;
+	struct sk_buff *tail;
+	struct list_head flowchain;
+	int deficit;
+	u32 backlog;
 	struct pie_vars vars;
 	struct pie_stats stats;
 };
@@ -462,21 +462,21 @@ static int fq_pie_dump(struct Qdisc *sch, struct sk_buff *skb)
 
 	/* convert target from pschedtime to us */
 	if (nla_put_u32(skb, TCA_FQ_PIE_TARGET,
-			((u32) PSCHED_TICKS2NS(q->params.target)) /
-			NSEC_PER_USEC) ||
+	   ((u32) PSCHED_TICKS2NS(q->params.target)) /
+	    NSEC_PER_USEC) ||
 	    nla_put_u32(skb, TCA_FQ_PIE_LIMIT, sch->limit) ||
 	    nla_put_u32(skb, TCA_FQ_PIE_TUPDATE, jiffies_to_usecs(q->params.tupdate)) ||
 	    nla_put_u32(skb, TCA_FQ_PIE_ALPHA, q->params.alpha) ||
 	    nla_put_u32(skb, TCA_FQ_PIE_BETA, q->params.beta) ||
 	    nla_put_u32(skb, TCA_FQ_PIE_ECN, q->params.ecn) ||
 	    nla_put_u32(skb, TCA_FQ_PIE_BYTEMODE, q->params.bytemode) ||
-		nla_put_u32(skb, TCA_FQ_PIE_QUANTUM, q->quantum) ||
-		nla_put_u32(skb, TCA_FQ_PIE_FLOWS, q->flows_cnt))
-		goto nla_put_failure;
+	    nla_put_u32(skb, TCA_FQ_PIE_QUANTUM, q->quantum) ||
+	    nla_put_u32(skb, TCA_FQ_PIE_FLOWS, q->flows_cnt))
+	    goto nla_put_failure;
 
 	return nla_nest_end(skb, opts);
 
-nla_put_failure:
+        nla_put_failure:
 	nla_nest_cancel(skb, opts);
 	return -1;
 
@@ -491,8 +491,8 @@ static int fq_pie_dump_stats(struct Qdisc *sch, struct gnet_dump *d)
 		.dropped	= q->stats.dropped,
 		.ecn_mark	= q->stats.ecn_mark,
 		.new_flow_count = q->stats.new_flow_count,
-		.new_flows_len = q->stats.new_flows_len,
-		.old_flows_len = q->stats.old_flows_len
+		.new_flows_len  = q->stats.new_flows_len,
+		.old_flows_len  = q->stats.old_flows_len
 	};
 
 	return gnet_stats_copy_app(d, &st, sizeof(st));
